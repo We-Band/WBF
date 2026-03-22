@@ -48,7 +48,7 @@
 <p align="center">
   <img src="./docs/images/4.png" alt="weband real user metrics" width="80%" />
 </p>
-출시 후 1달 안에 600명 이상의 사용자 유입이 있었습니다.
+출시 후 1달 안에 500명 이상의 사용자 유입이 있었습니다.
 
 ## 한계점
 
