@@ -12,6 +12,7 @@ import UserTable from '../userTable/UserTable';
 import { CANNOTUSESPECIALCHAR, SETSCHEDULE, URLCOPIED } from '@constants/alert';
 import AlertUrlCopy from '../alertUrlCopy/AlertUrlCopy';
 import useAlertStore from '@store/alert';
+import { USER_SCHEDULE_SEPARATOR } from '@utils/urlHandle';
 
 interface LiteHeaderProps {
   userToggle: boolean;
@@ -33,6 +34,23 @@ const LiteHeader: React.FC<LiteHeaderProps> = ({
 
   const setAlert = useAlertStore((state) => state.setAlert);
   const setAlertMessage = useAlertStore((state) => state.setAlertMessage);
+
+  const removeUserScheduleFromPath = (
+    path: string,
+    encodedUserName: string,
+  ): string => {
+    const escapedUserName = encodedUserName.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&',
+    );
+
+    return path.replace(
+      new RegExp(
+        `/${escapedUserName}${USER_SCHEDULE_SEPARATOR === '.' ? '\\.' : USER_SCHEDULE_SEPARATOR}[^/]+`,
+      ),
+      '',
+    );
+  };
 
   const handleCopy = () => {
     navigator.clipboard
@@ -60,14 +78,14 @@ const LiteHeader: React.FC<LiteHeaderProps> = ({
     const currentPath = window.location.pathname;
     const encodedUserName = encodeURIComponent(userName); // userName을 URL 인코딩
 
-    // 기존 'encodedUserName-encodedSchedule' 패턴을 찾아 제거
-    const updatedPath = currentPath.replace(
-      new RegExp(`/${encodedUserName}-[^/]+`),
-      '',
+    // 기존 사용자 일정 세그먼트를 제거한 뒤 다시 추가
+    const updatedPath = removeUserScheduleFromPath(
+      currentPath,
+      encodedUserName,
     );
 
     const resultPath = decodeURI(
-      `${updatedPath}/${userName}-${encodedSchedule}`,
+      `${updatedPath}/${userName}${USER_SCHEDULE_SEPARATOR}${encodedSchedule}`,
     );
 
     setUrl(resultPath);
@@ -81,10 +99,10 @@ const LiteHeader: React.FC<LiteHeaderProps> = ({
     const currentPath = window.location.pathname;
     const encodedUserName = encodeURIComponent(userName); // userName을 URL 인코딩
 
-    // 기존 'encodedUserName-encodedSchedule' 패턴을 찾아 제거
-    const updatedPath = currentPath.replace(
-      new RegExp(`/${encodedUserName}-[^/]+`),
-      '',
+    // 기존 사용자 일정 세그먼트를 제거
+    const updatedPath = removeUserScheduleFromPath(
+      currentPath,
+      encodedUserName,
     );
 
     // 새로운 경로 생성 및 이동

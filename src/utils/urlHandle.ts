@@ -1,3 +1,15 @@
+import { NOSCHEDULE } from '@constants/time';
+
+const SCHEDULE_BIT_LENGTH = NOSCHEDULE.length;
+const BASE64_URL_CHARSET =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+const BASE64_URL_BASE = BigInt(BASE64_URL_CHARSET.length);
+const RANGE_ENCODING_PREFIX = '~';
+const COMPACT_NUMBER_WIDTH = 2;
+const COMPACT_NUMBER_BASE = BASE64_URL_CHARSET.length;
+const RANGE_CHUNK_WIDTH = COMPACT_NUMBER_WIDTH * 2;
+export const USER_SCHEDULE_SEPARATOR = '.';
+
 export const parsePathSegments = (path: string) => {
   const segments = path.split('/'); // ["", "lite", "2025-2-31"]
   return segments;
@@ -13,9 +25,20 @@ export const parsePathToUserData = (path: string) => {
   const segments = path.split('/'); // ["", "lite", "2025-2-31", "성진-123123123", "정성진-123123123"]
 
   return segments.length > 3
-    ? segments.slice(3).map((user) => {
-        const [name, data] = decodeURIComponent(user).split('-');
-        return { name, binaryData: decode(data) };
+    ? segments.slice(3).flatMap((user) => {
+        const decodedSegment = decodeURIComponent(user);
+        const separatorIndex = decodedSegment.lastIndexOf(
+          USER_SCHEDULE_SEPARATOR,
+        );
+
+        if (separatorIndex === -1) {
+          return [];
+        }
+
+        const name = decodedSegment.slice(0, separatorIndex);
+        const data = decodedSegment.slice(separatorIndex + 1);
+
+        return [{ name, binaryData: decode(data) }];
       })
     : [];
 };
@@ -47,79 +70,162 @@ export const sumBinaryStrings = (
   return result;
 };
 
-const generateHangulCharset = () => {
-  const hangulStart = 0xac00;
-  const hangulEnd = 0xd7a3;
-  let hangul = '';
-
-  for (let i = hangulStart; i <= hangulEnd; i++) {
-    hangul += String.fromCharCode(i);
+const normalizeBinaryLength = (binaryStr: string): string => {
+  if (binaryStr.length >= SCHEDULE_BIT_LENGTH) {
+    return binaryStr.slice(-SCHEDULE_BIT_LENGTH);
   }
 
-  return hangul;
+  return binaryStr.padStart(SCHEDULE_BIT_LENGTH, '0');
 };
 
-const getAllEnglishLetters = () => {
-  const upper = Array.from({ length: 26 }, (_, i) =>
-    String.fromCharCode(65 + i),
-  ); // A-Z
-  const lower = Array.from({ length: 26 }, (_, i) =>
-    String.fromCharCode(97 + i),
-  ); // a-z
-  return upper.concat(lower).join('');
-};
+const encodeCompactNumber = (value: number): string => {
+  const maxValue = COMPACT_NUMBER_BASE ** COMPACT_NUMBER_WIDTH;
 
-const getCommonChineseCharacters = () => {
-  let chinese = '';
-  for (let i = 0x4e00; i <= 0x9fff; i++) {
-    chinese += String.fromCharCode(i);
+  if (value < 0 || value >= maxValue) {
+    throw new Error(`Value '${value}' is out of compact-number range`);
   }
-  return chinese;
+
+  let remaining = value;
+  let encoded = '';
+
+  for (let i = 0; i < COMPACT_NUMBER_WIDTH; i++) {
+    const charIndex = remaining % COMPACT_NUMBER_BASE;
+    encoded = BASE64_URL_CHARSET[charIndex] + encoded;
+    remaining = Math.floor(remaining / COMPACT_NUMBER_BASE);
+  }
+
+  return encoded;
 };
 
-const getJapaneseKana = () => {
-  let kana = '';
-  for (let i = 0x3040; i <= 0x309f; i++) {
-    kana += String.fromCharCode(i); // 히라가나
+const decodeCompactNumber = (encoded: string): number => {
+  if (encoded.length !== COMPACT_NUMBER_WIDTH) {
+    throw new Error(`Invalid compact-number length: '${encoded}'`);
   }
-  for (let i = 0x30a0; i <= 0x30ff; i++) {
-    kana += String.fromCharCode(i); // 가타카나
+
+  let value = 0;
+
+  for (const char of encoded) {
+    const idx = BASE64_URL_CHARSET.indexOf(char);
+
+    if (idx === -1) {
+      throw new Error(`Invalid compact-number character: '${char}'`);
+    }
+
+    value = value * COMPACT_NUMBER_BASE + idx;
   }
-  return kana;
+
+  return value;
 };
 
-const charset =
-  generateHangulCharset() +
-  getAllEnglishLetters() +
-  getCommonChineseCharacters() +
-  getJapaneseKana();
+const encodeBitset = (binaryStr: string): string => {
+  if (!/[1]/.test(binaryStr)) return '0';
 
-export const encode = (binaryStr: string): string => {
-  if (!/[1]/.test(binaryStr)) return charset[0];
   let bigIntValue = BigInt('0b' + binaryStr);
   let encoded = '';
 
-  const base = BigInt(charset.length);
-
   while (bigIntValue > 0n) {
-    const remainder = bigIntValue % base;
-    encoded = charset[Number(remainder)] + encoded;
-    bigIntValue /= base;
+    const remainder = bigIntValue % BASE64_URL_BASE;
+    encoded = BASE64_URL_CHARSET[Number(remainder)] + encoded;
+    bigIntValue /= BASE64_URL_BASE;
   }
 
   return encoded || '0';
 };
 
-export const decode = (encodedStr: string): string => {
-  const base = BigInt(charset.length);
+const encodeRanges = (binaryStr: string): string => {
+  let payload = '';
+  let index = 0;
+
+  while (index < binaryStr.length) {
+    if (binaryStr[index] === '1') {
+      const start = index;
+
+      while (index < binaryStr.length && binaryStr[index] === '1') {
+        index++;
+      }
+
+      const length = index - start;
+      payload += encodeCompactNumber(start) + encodeCompactNumber(length);
+      continue;
+    }
+
+    index++;
+  }
+
+  return `${RANGE_ENCODING_PREFIX}${payload}`;
+};
+
+export const encode = (binaryStr: string): string => {
+  if (!/[1]/.test(binaryStr)) {
+    return '0';
+  }
+
+  const bitsetEncoded = encodeBitset(binaryStr);
+  const rangeEncoded = encodeRanges(binaryStr);
+
+  return rangeEncoded.length < bitsetEncoded.length
+    ? rangeEncoded
+    : bitsetEncoded;
+};
+
+const decodeBitset = (encodedStr: string): string => {
+  if (encodedStr === '0') {
+    return NOSCHEDULE;
+  }
+
   let bigIntValue = BigInt(0);
 
   for (const char of encodedStr) {
-    const idx = charset.indexOf(char);
-    if (idx === -1)
+    const idx = BASE64_URL_CHARSET.indexOf(char);
+
+    if (idx === -1) {
       throw new Error(`Invalid character '${char}' in encoded string`);
-    bigIntValue = bigIntValue * base + BigInt(idx);
+    }
+
+    bigIntValue = bigIntValue * BASE64_URL_BASE + BigInt(idx);
   }
 
-  return bigIntValue.toString(2).padStart(210, '0');
+  return normalizeBinaryLength(bigIntValue.toString(2));
+};
+
+const decodeRanges = (encodedStr: string): string => {
+  const payload = encodedStr.slice(RANGE_ENCODING_PREFIX.length);
+
+  if (payload.length % RANGE_CHUNK_WIDTH !== 0) {
+    throw new Error('Invalid range-encoded payload length');
+  }
+
+  const binaryArray = Array.from({ length: SCHEDULE_BIT_LENGTH }, () => '0');
+
+  for (let i = 0; i < payload.length; i += RANGE_CHUNK_WIDTH) {
+    const start = decodeCompactNumber(payload.slice(i, i + COMPACT_NUMBER_WIDTH));
+    const length = decodeCompactNumber(
+      payload.slice(
+        i + COMPACT_NUMBER_WIDTH,
+        i + COMPACT_NUMBER_WIDTH + COMPACT_NUMBER_WIDTH,
+      ),
+    );
+
+    if (length <= 0 || start < 0 || start + length > SCHEDULE_BIT_LENGTH) {
+      throw new Error('Invalid range segment in encoded schedule');
+    }
+
+    for (let idx = start; idx < start + length; idx++) {
+      binaryArray[idx] = '1';
+    }
+  }
+
+  return binaryArray.join('');
+};
+
+export const decode = (encodedStr: string): string => {
+  if (encodedStr === '0') {
+    return NOSCHEDULE;
+  }
+
+  if (encodedStr.startsWith(RANGE_ENCODING_PREFIX)) {
+    return decodeRanges(encodedStr);
+  }
+
+  return decodeBitset(encodedStr);
 };
