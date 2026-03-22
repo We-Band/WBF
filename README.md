@@ -1,86 +1,126 @@
-# ✨ 프로젝트명: We Band
+# WeBand (weband)
 
-## 초기 세팅 및 명령어 정리
+<p align="center">
+  <img src="./docs/images/1.png" alt="weband screenshot 1" width="32%" />
+  <img src="./docs/images/2.png" alt="weband screenshot 2" width="32%" />
+  <img src="./docs/images/3.png" alt="weband screenshot 3" width="32%" />
+</p>
+팀원 간 일정을 쉽고 빠르게 조율할 수 있는 웹페이지입니다.  
+기준 날짜를 선택해 일정 보드를 만들고, URL을 공유해 각 팀원이 가능한 시간을 입력하면 공통 가능 시간을 한눈에 확인할 수 있습니다.
 
-1. **의존성 설치**
+## 프로젝트 개요
 
-- **_yarn install_** - 패키지 의존성 설치
-- **_yarn add 패키지명_** - 새로운 패키지 추가
-- **_yarn remove 패키지명_** - 패키지 제거
-- **_yarn dev_** - 개발환경 실행 (자동 재시작 Nodemon)
-- **_yarn start:dev_** - 개발환경 실행
-- **_yarn start:prod_** - 배포환경 실행
+- 목적: 팀 단위 미팅/스터디/프로젝트 일정 조율
+- 방식: 백엔드 서버 없이 URL 기반으로 일정 생성 및 공유
+- 범위: 7일 단위 시간표 조율
 
----
+## 핵심 기능
+
+- 기준 날짜 선택 후 1주 일정 보드 생성
+- 사용자별 가능 시간 입력/수정
+- 일정 데이터 URL 인코딩 저장 및 링크 공유
+- 전체 보기/사용자별 보기 전환
+- 시간대별 참여 가능 인원 수 시각화
+
+## URL 동작 방식
+
+- 기본 경로: `/lite`
+- 날짜 포함 경로: `/lite/{YYMMDD}`
+- 사용자 일정 포함 경로: `/lite/{YYMMDD}/{이름.인코딩된일정}`
+- 변경 사항은 URL에 반영되며, 공유한 URL만으로 동일한 일정 상태를 재현할 수 있습니다.
+
+## 인코딩 최적화 로직
+
+- 일정 상태를 고정 길이 비트열(`SCHEDULE_BIT_LENGTH`)로 표현합니다. (현재 Lite 기준 `210bit`)
+- 인코딩은 하이브리드 방식입니다.
+- 방식 A(비트셋): 비트열을 `BigInt`로 변환한 뒤 URL-safe 문자셋 `A-Z a-z 0-9 - _`로 인코딩합니다.
+- 방식 B(구간 압축): `1`이 연속된 구간을 `(start, length)` 쌍으로 압축해 저장합니다.
+- 두 방식 결과를 모두 만든 뒤, 더 짧은 문자열을 자동으로 선택합니다.
+- 스케줄이 전부 `0`인 경우는 `"0"` 1글자로 저장합니다.
+- 사용자별 URL 세그먼트는 `{name}.{encodedSchedule}` 형태로 구성합니다.
+- 디코딩 시 인코딩 문자열을 다시 비트열로 복원하고, `padStart/slice`로 고정 길이 정규화를 수행합니다.
+- 성과 1: 비트셋 상한은 최대 `35 bytes`이지만, 연속 구간이 많은 일정은 더 짧아집니다.
+- 성과 2: 예시(두 구간 일정) `bitset 30자 -> 구간압축 9자`까지 단축됩니다.
+- 성과 3: URL-safe 문자만 사용해 퍼센트 인코딩 오버헤드를 줄이고, 복사/공유 시 안정적으로 유지됩니다.
+
+## 실 사용자
+
+<p align="center">
+  <img src="./docs/images/4.png" alt="weband real user metrics" width="80%" />
+</p>
+출시 후 1달 안에 600명 이상의 사용자 유입이 있었습니다.
+
+## 한계점
+
+초반에는 쉬운 사용성 덕분에 빠르게 사용자 유입이 이루어졌지만,
+일정을 추가할 때마다 URL이 변경되어 매번 새 링크를 다시 공유해야 하는 불편함이 있었습니다.
+
+## 기술 스택
+
+- Language: TypeScript
+- Framework: React 19
+- Build Tool: Vite 6
+- Styling: styled-components, SCSS
+- Routing: react-router-dom
+- State: zustand
+- Package Manager: Yarn 4
+
+## 시작하기
+
+```bash
+yarn install
+yarn dev
+```
+
+- 기본 개발 서버: `http://localhost:5173`
+
+## 스크립트
+
+- `yarn dev`: 개발 서버 실행
+- `yarn build`: 프로덕션 빌드
+- `yarn preview`: 빌드 결과 로컬 미리보기
+- `yarn lint`: ESLint 검사
 
 ## Branch Naming Rule
 
-**Branch 이름**은 **작업 목적과 연관된 이슈 번호를 포함하는 방식**
+```text
+<type>/<issue-number>-<short-description>
 
-```php
-<타입>/<이슈 번호>-<간단한 설명>
-
-- feat/1234-add-user-login
-- fix/5678-fix-login-error
-- release/1.2.0
+feat/1234-add-user-login
+fix/5678-fix-login-error
+release/1.2.0
 ```
 
-### Branch Type
+- `feat/`: 새로운 기능 개발
+- `fix/`: 버그 수정
+- `hotfix/`: 긴급 버그 수정
+- `release/`: 릴리즈 준비
+- `chore/`: 문서/설정/빌드 등 비기능 작업
 
-- **feat/ - 새로운 기능 개발 시**
-- **fix/ -** **버그 수정** 시
-- **hotfix/ -** **긴급한 버그 수정** 시 (보통 프로덕션 환경에서 발생)
-- **release/ -** **릴리즈 준비 시**
-- **chore/ -** 빌드 및 기타 작업 자동화, 문서 작업 등 **코드와 관련 없는 작업**
+## Git Commit 규칙
 
----
+- `feat`: 새로운 기능 추가
+- `fix`: 버그 수정
+- `refactor`: 리팩토링
+- `style`: 포맷/스타일 수정
+- `test`: 테스트 추가/수정
+- `docs`: 문서 작업
+- `chore`: 빌드/설정/의존성 작업
 
-## 📌 Git Commit 규칙
+## 프로젝트 구조
 
-- **feat** - 새로운 기능 추가
-- **fix** - 버그 수정
-- **refactor** - 코드 리팩토링 (기능 변경 없이 구조 개선)
-- **style** - 코드 포맷팅, 세미콜론 누락 등 (비즈니스 로직에 영향이 없는 변경)
-- **test** - 테스트 추가 또는 수정
-- **docs** - 문서 추가 및 수정
-- **chore** - 빌드 작업, 패키지 관리 등
-
----
-
-## 📌 기술 스택 (Tech Stack)
-
-- **언어**: JavaScript
-- **프레임워크**: React
-- **빌드 툴**: Vite
-
----
-
-## 📂 프로젝트 구조 (간략화)
-
+```text
+src/
+├── assets/         # 이미지, 아이콘 등 정적 리소스
+├── components/     # 캘린더/온보딩/헤더 등 UI 컴포넌트
+├── constants/      # 시간, 알림 등 상수
+├── icons/          # SVG 아이콘 컴포넌트
+├── layout/         # 메인/라이트 레이아웃
+├── pages/          # 라우트 페이지
+├── store/          # Zustand 스토어
+├── styles/         # 전역 스타일 및 테마
+├── types/          # 타입 정의
+├── utils/          # URL/날짜 유틸리티
+├── App.tsx
+└── main.tsx
 ```
-│── src/
-│   ├── assets/        # 이미지, 폰트, CSS 등의 정적 파일
-│   ├── api/           # API 호출 함수 (fetch, axios 등)
-│   ├── components/    # 재사용 가능한 UI 컴포넌트
-│   ├── constants/     # 재사용 가능한 상수
-│   ├── pages/         # 개별 페이지 컴포넌트
-│   ├── services/      # 비즈니스 로직 및 상태 관리 (예: context, recoil, zustand)
-│   ├── hooks/         # 커스텀 훅
-│   ├── utils/         # 유틸리티 함수
-│   ├── layout/        # 전역으로 사용할 디자인 양식 정의
-│   ├── styles/        # 전역으로 사용할 폰트, 색상 정의
-│   ├── store/         # zustand를 이용한 상태 관리
-│   ├── icons/         # svg파일 재활용
-│   ├── types/         # 타입 정의
-│   ├── App.js         # 루트 컴포넌트
-│   ├── main.js        # ReactDOM.render() 또는 createRoot() 설정
-│── .env               # 환경 변수 파일
-│── .gitignore         # Git에서 제외할 파일
-│── vite.config.js     # Vite 설정 파일
-│── index.html         # HTML 템플릿
-│── package.json       # 프로젝트 의존성 및 설정
-│── public/            # 정적 파일 (파비콘 등)
-│── .yarn/             # Yarn Berry 관련 파일
-```
-
----
