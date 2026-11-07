@@ -1,4 +1,5 @@
-import { decodeDate, getWeekDates } from '@utils/date';
+import { getWeekDates, parseIsoDate } from '@utils/date';
+import useTeamStore from '@store/team';
 import * as S from './Calendar.styled';
 
 interface CalendarDateProps {
@@ -26,10 +27,11 @@ const CalendarDate: React.FC<CalendarDateProps> = ({
 };
 
 const CalendarDateList: React.FC = () => {
-  const path = window.location.pathname;
-  const segments = path.split('/'); // ["", "lite", "2025-2-31"]
+  const startDate = useTeamStore((state) => state.team?.startDate);
 
-  const { year, month, date } = decodeDate(segments[2]);
+  if (!startDate) return null;
+
+  const { year, month, date } = parseIsoDate(startDate);
   const weekDates: { month: number; date: number; day: string }[] =
     getWeekDates(year, month, date);
 

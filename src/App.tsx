@@ -21,7 +21,8 @@ function App() {
         )}
         <Routes>
           <Route element={<LiteLayout />}>
-            <Route path="lite/*" element={<Lite />} />
+            <Route path="lite" element={<Lite />} />
+            <Route path="lite/:teamId" element={<Lite />} />
           </Route>
 
           <Route element={<MainLayout />}>

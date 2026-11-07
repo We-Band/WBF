@@ -7,10 +7,13 @@ import {
   FIRSTDAY,
   MonthToNum,
   NumToMonth,
-  encodeDate,
+  toIsoDate,
 } from '@utils/date';
 import { useNavigate } from 'react-router-dom';
 import { ToggleOffOnBoardingLite, ToggleOnOnBoardingLite } from '@icons/Button';
+import { createTeam } from '@api/team';
+import useAlertStore from '@store/alert';
+import { REQUESTFAILED } from '@constants/alert';
 
 const getMaxDaysInMonth = (year: number, monthIndex: number): number => {
   return new Date(year, monthIndex + 1, 0).getDate();
@@ -28,6 +31,9 @@ const DatePicker: React.FC = () => {
   const [maxDay, setMaxDay] = useState(getMaxDaysInMonth(year, monthNum));
   const [toggle, setToggle] = useState(true);
   const monthDropBoxRef = useRef<HTMLDivElement>(null);
+  const [creating, setCreating] = useState(false);
+  const setAlert = useAlertStore((state) => state.setAlert);
+  const setAlertMessage = useAlertStore((state) => state.setAlertMessage);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
@@ -52,12 +58,26 @@ const DatePicker: React.FC = () => {
     setYear(toggle ? currentYear : currentYear + 1);
   }, [toggle]);
 
-  const handleClick = () => {
-    if (date < FIRSTDAY) {
-      navigate(encodeDate(year, MonthToNum(month) + 1, date + 1));
-      return;
+  const handleClick = async () => {
+    if (creating) return;
+
+    const startDate = toIsoDate(
+      year,
+      MonthToNum(month) + 1,
+      date < FIRSTDAY ? FIRSTDAY : date,
+    );
+
+    setCreating(true);
+
+    try {
+      const team = await createTeam(startDate);
+      navigate(`/lite/${team.id}`);
+    } catch (err) {
+      console.error('Failed to create team: ', err);
+      setAlert(true);
+      setAlertMessage(REQUESTFAILED);
+      setCreating(false);
     }
-    navigate(encodeDate(year, MonthToNum(month) + 1, date));
   };
 
   useEffect(() => {
@@ -120,8 +140,8 @@ const DatePicker: React.FC = () => {
         </S.DatePicker>
       </S.DatePickerContainer>
 
-      <S.MakeScheduleButton onClick={handleClick}>
-        시간 약속 만들기
+      <S.MakeScheduleButton onClick={handleClick} disabled={creating}>
+        {creating ? '만드는 중...' : '시간 약속 만들기'}
       </S.MakeScheduleButton>
     </>
   );

@@ -1,10 +1,9 @@
-import { parsePathToUserData } from '@utils/urlHandle';
 import * as S from './UserTable.styled';
 import { useLiteContext } from '@components/lite/LiteHome';
+import useTeamStore from '@store/team';
 
 const UserTable = () => {
-  const path = window.location.pathname;
-  const userData = parsePathToUserData(path);
+  const members = useTeamStore((state) => state.team?.members);
   const { selectedUser, setSelectedUser } = useLiteContext();
 
   return (
@@ -15,10 +14,10 @@ const UserTable = () => {
       >
         전체보기
       </S.UserButton>
-      {userData.map(({ name }, idx) => (
+      {members?.map(({ name }) => (
         <S.UserButton
           $selected={selectedUser === name}
-          key={idx}
+          key={name}
           onClick={() => setSelectedUser(name)}
         >
           {name}

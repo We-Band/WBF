@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
+    "nanoid": "^6.0.2",
     "polished": "^4.3.1",
+    "postgres": "^4.1.0",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

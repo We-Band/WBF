@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as S from './Calendar.styled';
 import { BLOCKNUM, WEEK } from '@constants/time';
 import { useLiteContext } from '@components/lite/LiteHome';
-import { encode } from '@utils/urlHandle';
+import { parseCount } from '@utils/schedule';
 
 interface CalendarScheduleProps {
   totalUser: number;
@@ -16,7 +16,7 @@ const CalendarScheduleList: React.FC<CalendarScheduleProps> = ({
   edit,
 }) => {
   const [scheduleString, setScheduleString] = useState(initialScheduleString);
-  const { setEncodedSchedule } = useLiteContext();
+  const { setEditingSchedule } = useLiteContext();
   const [startIndex, setStartIndex] = useState<number | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
 
@@ -59,7 +59,7 @@ const CalendarScheduleList: React.FC<CalendarScheduleProps> = ({
 
   useEffect(() => {
     if (edit) {
-      setEncodedSchedule(encode(scheduleString));
+      setEditingSchedule(scheduleString);
     }
   }, [scheduleString]);
 
@@ -75,8 +75,8 @@ const CalendarScheduleList: React.FC<CalendarScheduleProps> = ({
         return (
           <S.CalendarScheduleLine key={weekIdx}>
             {Array.from({ length: BLOCKNUM }).map((_, sectionIdx) => {
-              const num1 = parseInt(daySchedule[sectionIdx * 2] || '0', 10);
-              const num2 = parseInt(daySchedule[sectionIdx * 2 + 1] || '0', 10);
+              const num1 = parseCount(daySchedule[sectionIdx * 2]);
+              const num2 = parseCount(daySchedule[sectionIdx * 2 + 1]);
 
               const index1 = getIndex(weekIdx, sectionIdx, 0);
               const index2 = getIndex(weekIdx, sectionIdx, 1);

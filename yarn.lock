@@ -3676,6 +3676,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nanoid@npm:^6.0.2":
+  version: 6.0.2
+  resolution: "nanoid@npm:6.0.2"
+  bin:
+    nanoid: bin/nanoid.js
+  checksum: 10c0/3c0223d2e658e6bab838af37112731df28eb5146b982e1b89bc1889b7a1476e0a36b4aa37ac6a567e7ebaf22a690d7916a80143a84cef77bd77416d0f1d20b9c
+  languageName: node
+  linkType: hard
+
 "natural-compare@npm:^1.4.0":
   version: 1.4.0
   resolution: "natural-compare@npm:1.4.0"
@@ -4007,6 +4016,13 @@ __metadata:
     picocolors: "npm:^1.1.1"
     source-map-js: "npm:^1.2.1"
   checksum: 10c0/b75510d7b28c3ab728c8733dd01538314a18c52af426f199a3c9177e63eb08602a3938bfb66b62dc01350b9aed62087eabbf229af97a1659eb8d3513cec823b3
+  languageName: node
+  linkType: hard
+
+"postgres@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "postgres@npm:4.1.0"
+  checksum: 10c0/58142d2e7fcd77f38db50d859649a4ea8481deff78c571c0863120bb3434bbe0d1eef0d5e2833192400e7814c9f405b0d8355cdcd153c69f89814d2610b05cb4
   languageName: node
   linkType: hard
 
@@ -5090,7 +5106,9 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^5.1.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
     globals: "npm:^16.0.0"
+    nanoid: "npm:^6.0.2"
     polished: "npm:^4.3.1"
+    postgres: "npm:^4.1.0"
     prettier: "npm:^3.5.3"
     prop-types: "npm:^15.8.1"
     react: "npm:^19.0.0"
