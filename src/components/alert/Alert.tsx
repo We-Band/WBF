@@ -16,7 +16,7 @@ const Alert = ({
   }, [stableOnClose, messages]); // messages가 변경될 때마다 타이머 리셋
 
   return (
-    <S.AlertContainer>
+    <S.AlertContainer role="status" aria-live="polite">
       {messages.map((message, idx) => (
         <S.AlertText key={idx} $highlight={idx % 2 === 0}>
           {message}

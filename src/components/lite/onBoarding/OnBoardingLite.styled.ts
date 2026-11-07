@@ -45,6 +45,9 @@ export const DatePickerContainer = styled.div`
 export const YearToggle = styled.div`
   display: flex;
   align-items: center;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
 
   gap: 8px;
 `;
@@ -58,6 +61,7 @@ export const MonthPicker = styled.div`
   justify-content: flex-end;
   align-items: center;
   width: max-content;
+  cursor: pointer;
 
   gap: 16px;
 `;
@@ -141,10 +145,25 @@ export const DateInput = styled.input`
 `;
 
 // button
+export const DateSummary = styled.p<{ $warning: boolean }>`
+  ${({ theme }) => theme.fontStyles.S02_Medium};
+  color: ${({ theme, $warning }) =>
+    $warning ? theme.colors.AlertColor.red500 : theme.colors.Gray.gray600};
+  margin-top: -48px;
+  text-align: center;
+  word-break: keep-all;
+`;
+
 export const MakeScheduleButton = styled.button`
   ${({ theme }) => theme.fontStyles.T02_Bold};
+  cursor: pointer;
 
-  background: ${({ theme }) => theme.colors.WBOrange.wbo400};
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  background: ${({ theme }) => theme.colors.WBOrange.wbo600};
   color: ${({ theme }) => theme.colors.Gray.gray50};
 
   display: flex;

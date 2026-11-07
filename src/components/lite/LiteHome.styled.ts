@@ -36,3 +36,17 @@ export const LiteMessageButton = styled.button`
   padding: 16px 0;
   border-radius: 8px;
 `;
+
+export const StickyHeader = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: ${({ theme }) => theme.colors.BlackAndWhite.white};
+`;
+
+export const ExpiryText = styled.p`
+  ${({ theme }) => theme.fontStyles.S01_Regular};
+  color: ${({ theme }) => theme.colors.Gray.gray600};
+  text-align: center;
+  padding: 16px 16px 24px;
+`;

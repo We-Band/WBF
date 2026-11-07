@@ -8,8 +8,8 @@ export const MAX_MEMBERS_PER_TEAM = 30;
 const TEAM_ID_PATTERN = /^[A-Za-z0-9_-]{8,32}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const SCHEDULE_PATTERN = new RegExp(`^[01]{${SCHEDULE_BIT_LENGTH}}$`);
-// 프론트와 동일: 공백/특수문자 금지
-const NAME_FORBIDDEN = /[\s{}[\]/?.,;:|)*~`!^\-_+<>@#$%&\\=('"]/;
+// 경로 구분자와 제어 문자만 막는다. 공백·하이픈 등은 허용 (프론트와 동일한 규칙)
+const NAME_FORBIDDEN = /[/\\\u0000-\u001f\u007f]/;
 
 export const json = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -44,6 +44,7 @@ export const isValidDate = (value: unknown): value is string => {
 
 export const isValidName = (value: unknown): value is string =>
   typeof value === 'string' &&
+  value === value.trim() &&
   value.length >= 1 &&
   value.length <= MAX_NAME_LENGTH &&
   !NAME_FORBIDDEN.test(value);

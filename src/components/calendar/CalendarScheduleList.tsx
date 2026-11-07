@@ -1,125 +1,70 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import * as S from './Calendar.styled';
 import { BLOCKNUM, WEEK } from '@constants/time';
-import { useLiteContext } from '@components/lite/LiteHome';
-import { parseCount } from '@utils/schedule';
+import { Cell, cellIndex, isInRect, parseCount } from '@utils/schedule';
 
 interface CalendarScheduleProps {
-  totalUser: number;
+  /** 칸마다 '0'/'1' 비트 또는 인원 수(36진수) */
   scheduleString: string;
-  edit: boolean;
+  /** 색 농도 계산 기준 인원 수 */
+  totalUser: number;
+  /** 편집 중 범위 선택의 시작 칸 */
+  anchor?: Cell | null;
+  /** 편집 중 마우스가 올라간 칸 (범위 미리보기용) */
+  hover?: Cell | null;
+  /** 미리보기가 지우기인지 */
+  erasing?: boolean;
+  /** 강조할 칸 인덱스 (가장 많이 겹치는 시간) */
+  bestIndexes?: Set<number>;
+  /** 눌러서 살펴보는 중인 칸 */
+  inspectedIndex?: number | null;
+  onCellClick: (cell: Cell) => void;
+  onCellHover?: (cell: Cell) => void;
 }
 
 const CalendarScheduleList: React.FC<CalendarScheduleProps> = ({
+  scheduleString,
   totalUser,
-  scheduleString: initialScheduleString,
-  edit,
+  anchor = null,
+  hover = null,
+  erasing = false,
+  bestIndexes,
+  inspectedIndex = null,
+  onCellClick,
+  onCellHover,
 }) => {
-  const [scheduleString, setScheduleString] = useState(initialScheduleString);
-  const { setEditingSchedule } = useLiteContext();
-  const [startIndex, setStartIndex] = useState<number | null>(null);
-  const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+  const renderCell = (cell: Cell) => {
+    const index = cellIndex(cell);
+    const inPreview =
+      anchor !== null && isInRect(anchor, hover ?? anchor, cell);
 
-  const getIndex = (weekIdx: number, sectionIdx: number, pos: number) =>
-    weekIdx * 30 + sectionIdx * 2 + pos;
-
-  const handleTouch = (weekIdx: number, sectionIdx: number, pos: number) => {
-    const index = getIndex(weekIdx, sectionIdx, pos);
-
-    if (startIndex === null) {
-      setStartIndex(index); // 첫 클릭
-      setCurrentIndex(index); // 현재 위치도 설정
-    } else {
-      const [from, to] = [startIndex, index].sort((a, b) => a - b);
-      const updated = scheduleString
-        .split('')
-        .map((char, i) =>
-          i >= from && i <= to ? (char === '0' ? '1' : '0') : char,
-        )
-        .join('');
-
-      setScheduleString(updated);
-      setStartIndex(null);
-      setCurrentIndex(null);
-    }
+    return (
+      <S.CalendarSchedule
+        key={cell.slot}
+        $num={parseCount(scheduleString[index])}
+        $total={totalUser}
+        $preview={inPreview ? (erasing ? 'erase' : 'add') : undefined}
+        $best={bestIndexes?.has(index)}
+        $inspected={inspectedIndex === index}
+        onClick={() => onCellClick(cell)}
+        onMouseEnter={() => onCellHover?.(cell)}
+      />
+    );
   };
-
-  const handleHover = (weekIdx: number, sectionIdx: number, pos: number) => {
-    if (startIndex !== null) {
-      const index = getIndex(weekIdx, sectionIdx, pos);
-      setCurrentIndex(index);
-    }
-  };
-
-  useEffect(() => {
-    setScheduleString(initialScheduleString);
-    setStartIndex(null);
-    setCurrentIndex(null);
-  }, [edit]);
-
-  useEffect(() => {
-    if (edit) {
-      setEditingSchedule(scheduleString);
-    }
-  }, [scheduleString]);
 
   return (
-    <>
-      {Array.from({ length: WEEK }).map((_, weekIdx) => {
-        // Extract 30 characters for the current day
-        const daySchedule = scheduleString.slice(
-          weekIdx * 30,
-          (weekIdx + 1) * 30,
-        );
-
-        return (
-          <S.CalendarScheduleLine key={weekIdx}>
-            {Array.from({ length: BLOCKNUM }).map((_, sectionIdx) => {
-              const num1 = parseCount(daySchedule[sectionIdx * 2]);
-              const num2 = parseCount(daySchedule[sectionIdx * 2 + 1]);
-
-              const index1 = getIndex(weekIdx, sectionIdx, 0);
-              const index2 = getIndex(weekIdx, sectionIdx, 1);
-
-              const isSelected1 =
-                startIndex !== null &&
-                currentIndex !== null &&
-                Math.min(startIndex, currentIndex) <= index1 &&
-                index1 <= Math.max(startIndex, currentIndex);
-
-              const isSelected2 =
-                startIndex !== null &&
-                currentIndex !== null &&
-                Math.min(startIndex, currentIndex) <= index2 &&
-                index2 <= Math.max(startIndex, currentIndex);
-
-              return (
-                <S.CalendarScheduleSection key={sectionIdx}>
-                  <S.CalendarSchedule
-                    $num={num1}
-                    $total={totalUser}
-                    onMouseEnter={() =>
-                      edit && handleHover(weekIdx, sectionIdx, 0)
-                    }
-                    onClick={() => edit && handleTouch(weekIdx, sectionIdx, 0)}
-                    $selected={isSelected1}
-                  />
-                  <S.CalendarSchedule
-                    $num={num2}
-                    $total={totalUser}
-                    onClick={() => edit && handleTouch(weekIdx, sectionIdx, 1)}
-                    onMouseEnter={() =>
-                      edit && handleHover(weekIdx, sectionIdx, 1)
-                    }
-                    $selected={isSelected2}
-                  />
-                </S.CalendarScheduleSection>
-              );
-            })}
-          </S.CalendarScheduleLine>
-        );
-      })}
-    </>
+    <S.CalendarScheduleGrid>
+      {Array.from({ length: WEEK }).map((_, day) => (
+        <S.CalendarScheduleLine key={day}>
+          {Array.from({ length: BLOCKNUM }).map((_, hour) => (
+            <S.CalendarScheduleSection key={hour}>
+              {renderCell({ day, slot: hour * 2 })}
+              {renderCell({ day, slot: hour * 2 + 1 })}
+            </S.CalendarScheduleSection>
+          ))}
+        </S.CalendarScheduleLine>
+      ))}
+    </S.CalendarScheduleGrid>
   );
 };
 
