@@ -1,4 +1,4 @@
-import { ReactNode, useContext, useEffect } from 'react';
+import { ReactNode, useContext, useEffect, useRef } from 'react';
 import { createContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LiteHeader from './header/LiteHeader';
@@ -58,6 +58,11 @@ const LiteProvider = ({
   );
 };
 
+const formatExpiry = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+};
+
 const LiteHome = ({ teamId }: { teamId: string }) => {
   const [userToggle, setUserToggle] = useState(false);
   // 아직 이 팀을 요청하기 전이면(이전 팀의 상태가 남아 있으면) 로딩으로 본다.
@@ -67,9 +72,37 @@ const LiteHome = ({ teamId }: { teamId: string }) => {
   const fetchTeam = useTeamStore((state) => state.fetchTeam);
   const navigate = useNavigate();
 
+  const expiresAt = useTeamStore((state) => state.team?.expiresAt);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchTeam(teamId);
+
+    // 다른 팀원이 입력한 내용을 탭으로 돌아왔을 때 반영한다.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') fetchTeam(teamId);
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [teamId, fetchTeam]);
+
+  // 고정 헤더 높이를 CSS 변수로 넘겨 요일 줄이 그 아래에 붙도록 한다.
+  useEffect(() => {
+    const header = headerRef.current;
+    const container = containerRef.current;
+    if (!header || !container) return;
+
+    const observer = new ResizeObserver(() => {
+      container.style.setProperty(
+        '--lite-header-height',
+        `${header.offsetHeight}px`,
+      );
+    });
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, [status]);
 
   if (status === 'notFound' || status === 'error') {
     return (
@@ -104,10 +137,17 @@ const LiteHome = ({ teamId }: { teamId: string }) => {
   }
 
   return (
-    <S.LiteHomeContainer>
+    <S.LiteHomeContainer ref={containerRef}>
       <LiteProvider teamId={teamId}>
-        <LiteHeader userToggle={userToggle} setUserToggle={setUserToggle} />
+        <S.StickyHeader ref={headerRef}>
+          <LiteHeader userToggle={userToggle} setUserToggle={setUserToggle} />
+        </S.StickyHeader>
         <LiteCalendar userToggle={userToggle} />
+        {expiresAt && (
+          <S.ExpiryText>
+            이 일정은 {formatExpiry(expiresAt)}까지 보관된 뒤 자동으로 삭제돼요.
+          </S.ExpiryText>
+        )}
       </LiteProvider>
     </S.LiteHomeContainer>
   );

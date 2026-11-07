@@ -55,3 +55,10 @@ export const FooterLink = styled.a`
   ${({ theme }) => theme.fontStyles.S01_Medium};
   color: ${({ theme }) => theme.colors.Gray.gray500};
 `;
+
+export const LogoButton = styled.button`
+  display: flex;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+`;

@@ -3,20 +3,19 @@ import styled from 'styled-components';
 export const AlertCopyUrlBackgroud = styled.div`
   display: flex;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+  z-index: 10;
   flex-shrink: 0;
   justify-content: center;
   align-items: center;
+  padding: 16px;
 
   background: ${({ theme }) => theme.colors.BlackAlpha[600]};
 `;
 
 export const AlertCopyUrlContainer = styled.div`
   display: flex;
-  width: 360px;
+  width: min(360px, 100%);
   padding: 20px 24px;
   flex-direction: column;
   align-items: center;
@@ -32,8 +31,10 @@ export const AlertCopyUrlTitle = styled.h3`
   color: ${({ theme }) => theme.colors.Gray.gray800};
 `;
 
-export const UrlContainer = styled.div`
+export const UrlContainer = styled.button`
   display: flex;
+  max-width: 100%;
+  cursor: pointer;
   padding: 4px 12px 4px 20px;
   justify-content: center;
   align-items: center;
@@ -43,13 +44,15 @@ export const UrlContainer = styled.div`
   background: ${({ theme }) => theme.colors.Gray.gray200};
 `;
 
-export const UrlText = styled.p`
-  width: 220px;
-  color: ${({ theme }) => theme.colors.WBOrange.wbo400};
+export const UrlText = styled.span`
+  min-width: 0;
+  max-width: 220px;
+  color: ${({ theme }) => theme.colors.WBOrange.wbo700};
   ${({ theme }) => theme.fontStyles.S02_Bold};
 
   white-space: nowrap;
-  overflow-x: hidden;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 export const UrlInstructionContainer = styled.div`

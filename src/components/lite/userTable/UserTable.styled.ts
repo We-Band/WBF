@@ -5,11 +5,12 @@ export const UserTableContainer = styled.div`
   position: absolute;
   flex-direction: column;
   width: 154px;
-  max-height: 200px;
+  max-height: 240px;
   height: fit-content;
-  top: 160px;
-  margin-left: -50px;
-  overflow: auto;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 5;
+  overflow-y: auto;
 
   flex-shrink: 0;
   padding: 8px;
@@ -20,17 +21,17 @@ export const UserTableContainer = styled.div`
   box-shadow: 0px 0px 1px 0px rgba(87, 85, 85, 0.25);
 `;
 
-export const UserButton = styled.div<{ $selected: boolean }>`
+export const UserButton = styled.button<{ $selected: boolean }>`
   ${({ theme }) => theme.fontStyles.B03}
 
-  display: flex;
+  display: block;
+  flex-shrink: 0;
   height: 44px;
   width: 100%;
-  justify-content: center;
-  align-items: flex-start;
+  text-align: center;
+  cursor: pointer;
 
-  padding: 12px 36px;
-  gap: 10px;
+  padding: 12px;
 
   border-radius: 8px;
   background: ${({ theme, $selected }) =>
@@ -41,5 +42,6 @@ export const UserButton = styled.div<{ $selected: boolean }>`
       $selected ? theme.colors.WBOrange.wbo500 : 'transparent'};
 
   white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
 `;

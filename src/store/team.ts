@@ -9,12 +9,17 @@ interface TeamStore {
   team: Team | null;
   status: TeamStatus;
   fetchTeam: (teamId: string) => Promise<void>;
+  /** 편집 중 저장하지 않은 변경이 있는지 (페이지 이탈 경고용) */
+  hasUnsavedChanges: boolean;
+  setHasUnsavedChanges: (value: boolean) => void;
 }
 
 const useTeamStore = create<TeamStore>((set, get) => ({
   teamId: null,
   team: null,
   status: 'idle',
+  hasUnsavedChanges: false,
+  setHasUnsavedChanges: (value) => set({ hasUnsavedChanges: value }),
   fetchTeam: async (teamId) => {
     // 다른 팀으로 이동할 때만 로딩 화면을 보여주고, 같은 팀 새로고침은 화면을 유지한다.
     if (get().team?.id !== teamId) {

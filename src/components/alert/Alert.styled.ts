@@ -12,13 +12,15 @@ export const AlertContainer = styled.div`
   position: fixed;
 
   display: flex;
-  width: 360px;
+  flex-wrap: wrap;
+  width: min(360px, calc(100vw - 32px));
+  z-index: 20;
   justify-content: center;
   align-items: center;
   align-self: center;
   bottom: 36px;
 
-  padding: 8px 40px;
+  padding: 8px 24px;
   border-radius: 12px;
 
   animation: ${fadeInOut} 3s ease-in-out;
@@ -30,6 +32,7 @@ export const AlertText = styled.p<{ $highlight: boolean }>`
   ${({ theme }) => theme.fontStyles.S02_Bold}
   color: ${({ theme, $highlight }) =>
     $highlight
-      ? theme.colors.WBOrange.wbo400
+      ? theme.colors.WBOrange.wbo300
       : theme.colors.BlackAndWhite.white};
+  white-space: pre-wrap;
 `;

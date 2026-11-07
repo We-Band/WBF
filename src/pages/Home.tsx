@@ -7,7 +7,7 @@ const Home = () => {
     navigate('/lite');
   }, []);
 
-  return <>Home page</>;
+  return null;
 };
 
 export default Home;

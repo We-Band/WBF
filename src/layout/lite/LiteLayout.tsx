@@ -3,23 +3,37 @@ import * as S from './LiteLayout.styled';
 import { useNavigate } from 'react-router-dom';
 import LiteLogo from '@assets/logo/lite-logo.svg?react';
 import FooterLogo from '@assets/logo/footer-logo.svg?react';
+import useTeamStore from '@store/team';
+
+const LEAVE_MESSAGE = '표시한 시간이 저장되지 않아요. 페이지를 떠날까요?';
 
 const LiteLayout = () => {
   const navigate = useNavigate();
 
+  const hasUnsavedChanges = useTeamStore((state) => state.hasUnsavedChanges);
+
+  const confirmLeave = () =>
+    !hasUnsavedChanges || window.confirm(LEAVE_MESSAGE);
+
   const handleClick = () => {
-    navigate(`/lite`);
+    if (confirmLeave()) navigate(`/lite`);
   };
 
   const handleClickHome = () => {
-    navigate(`/`);
+    if (confirmLeave()) navigate(`/`);
   };
 
   return (
     <S.LiteLayoutContainer>
       <S.LogoContainer>
         <S.LogoPadding />
-        <LiteLogo onClick={handleClick} />
+        <S.LogoButton
+          type="button"
+          aria-label="새 시간 약속 만들기"
+          onClick={handleClick}
+        >
+          <LiteLogo aria-hidden />
+        </S.LogoButton>
       </S.LogoContainer>
 
       <S.MainContentContainer>
@@ -28,7 +42,13 @@ const LiteLayout = () => {
 
       <S.FooterBackground>
         <S.FooterContainer>
-          <FooterLogo onClick={handleClickHome} />
+          <S.LogoButton
+            type="button"
+            aria-label="WeBand 홈"
+            onClick={handleClickHome}
+          >
+            <FooterLogo aria-hidden />
+          </S.LogoButton>
 
           <S.FooterLinkContainer>
             <S.FooterLink

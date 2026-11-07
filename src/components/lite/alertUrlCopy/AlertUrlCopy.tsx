@@ -1,41 +1,45 @@
 import { AlertCopyUrlLite } from '@icons/CopyUrl';
 import * as S from './AlertUrlCopy.styled';
-import { useEffect } from 'react';
-import { URLCOPIED } from '@constants/alert';
-import useAlertStore from '@store/alert';
+import * as D from '@components/dialog/Dialog.styled';
+import { useEffect, useId, useRef } from 'react';
+import useShareLink from '@hooks/useShareLink';
 
 interface AlertUrlCopyProps {
   url: string;
   onClose: () => void;
 }
 
+/** 저장 완료 후 공유 링크를 보여 주는 대화상자. 클립보드는 사용자가 버튼을 눌렀을 때만 쓴다. */
 const AlertUrlCopy = ({ url, onClose }: AlertUrlCopyProps) => {
-  const setAlert = useAlertStore((state) => state.setAlert);
-  const setAlertMessage = useAlertStore((state) => state.setAlertMessage);
-
-  const handleCopy = () => {
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        setAlert(true);
-        setAlertMessage(URLCOPIED);
-      })
-      .catch((err) => {
-        console.error('Error copying text: ', err);
-      });
-  };
+  const share = useShareLink();
+  const titleId = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    handleCopy();
-  }, []);
+    closeRef.current?.focus();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
-    <S.AlertCopyUrlBackgroud>
-      <S.AlertCopyUrlContainer>
-        <S.AlertCopyUrlTitle>일정 저장 완료!</S.AlertCopyUrlTitle>
-        <S.UrlContainer onClick={handleCopy}>
+    <S.AlertCopyUrlBackgroud onClick={onClose}>
+      <S.AlertCopyUrlContainer
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <S.AlertCopyUrlTitle id={titleId}>일정 저장 완료!</S.AlertCopyUrlTitle>
+        <S.UrlContainer
+          type="button"
+          aria-label="링크 복사"
+          onClick={() => share(url)}
+        >
           <S.UrlText>{url}</S.UrlText>
-          <AlertCopyUrlLite />
+          <AlertCopyUrlLite aria-hidden />
         </S.UrlContainer>
         <S.UrlInstructionContainer>
           <S.UrlInstruction>링크는 바뀌지 않아요.</S.UrlInstruction>
@@ -46,7 +50,23 @@ const AlertUrlCopy = ({ url, onClose }: AlertUrlCopyProps) => {
             해 보세요!
           </S.UrlInstruction>
         </S.UrlInstructionContainer>
-        <S.AlertUrlButton onClick={onClose}>확인</S.AlertUrlButton>
+        <D.DialogButtons>
+          <D.DialogButton
+            ref={closeRef}
+            type="button"
+            $variant="secondary"
+            onClick={onClose}
+          >
+            확인
+          </D.DialogButton>
+          <D.DialogButton
+            type="button"
+            $variant="primary"
+            onClick={() => share(url)}
+          >
+            링크 공유하기
+          </D.DialogButton>
+        </D.DialogButtons>
       </S.AlertCopyUrlContainer>
     </S.AlertCopyUrlBackgroud>
   );
