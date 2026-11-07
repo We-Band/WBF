@@ -6,7 +6,6 @@ interface ConfirmDialogProps {
   description?: string;
   confirmLabel: string;
   cancelLabel?: string;
-  danger?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -17,7 +16,6 @@ const ConfirmDialog = ({
   description,
   confirmLabel,
   cancelLabel = '취소',
-  danger = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) => {
@@ -54,11 +52,7 @@ const ConfirmDialog = ({
           >
             {cancelLabel}
           </S.DialogButton>
-          <S.DialogButton
-            type="button"
-            $variant={danger ? 'danger' : 'primary'}
-            onClick={onConfirm}
-          >
+          <S.DialogButton type="button" $variant="primary" onClick={onConfirm}>
             {confirmLabel}
           </S.DialogButton>
         </S.DialogButtons>
