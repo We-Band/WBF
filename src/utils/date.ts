@@ -30,20 +30,15 @@ export const NumToDay = (day: number): string => {
   return DAYNAMES[day];
 };
 
-export const encodeDate = (
-  year: number,
-  month: number,
-  date: number,
-): string => {
-  return `${year.toString().slice(2)}${month.toString().padStart(2, '0')}${date.toString().padStart(2, '0')}`;
-};
+/** (2025, 3, 9) -> '2025-03-09' */
+export const toIsoDate = (year: number, month: number, date: number): string =>
+  `${year}-${month.toString().padStart(2, '0')}-${date.toString().padStart(2, '0')}`;
 
-export const decodeDate = (
-  code: string,
+/** '2025-03-09' -> { year: 2025, month: 3, date: 9 } */
+export const parseIsoDate = (
+  iso: string,
 ): { year: number; month: number; date: number } => {
-  const year = 2000 + Number(code.slice(0, 2));
-  const month = Number(code.slice(2, 4));
-  const date = Number(code.slice(4, 6));
+  const [year, month, date] = iso.split('-').map(Number);
   return { year, month, date };
 };
 

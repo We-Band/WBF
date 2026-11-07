@@ -11,25 +11,45 @@
 ## 프로젝트 개요
 
 - 목적: 팀 단위 미팅/스터디/프로젝트 일정 조율
-- 방식: 백엔드 서버 없이 URL 기반으로 일정 생성 및 공유
+- 방식: Vercel Functions + Postgres에 팀 일정을 저장하고, 고정된 팀 링크로 공유
 - 범위: 7일 단위 시간표 조율
 
 ## 핵심 기능
 
 - 기준 날짜 선택 후 1주 일정 보드 생성
 - 사용자별 가능 시간 입력/수정
-- 일정 데이터 URL 인코딩 저장 및 링크 공유
+- 팀 생성 시 랜덤 ID 발급, 링크 하나로 계속 공유 (일정을 추가해도 링크가 바뀌지 않음)
+- 생성 후 2주가 지나면 자동 삭제
 - 전체 보기/사용자별 보기 전환
 - 시간대별 참여 가능 인원 수 시각화
 
-## URL 동작 방식
+## 데이터 저장 구조
 
-- 기본 경로: `/lite`
-- 날짜 포함 경로: `/lite/{YYMMDD}`
-- 사용자 일정 포함 경로: `/lite/{YYMMDD}/{이름.인코딩된일정}`
-- 변경 사항은 URL에 반영되며, 공유한 URL만으로 동일한 일정 상태를 재현할 수 있습니다.
+- 경로: `/lite` (온보딩) → `/lite/{teamId}` (일정 보드)
+- `teamId`는 `nanoid` 10자 랜덤 문자열입니다. 순차 ID가 아니라서 다른 팀 링크를 추측할 수 없습니다.
+- 스키마: [`db/schema.sql`](./db/schema.sql)
+  - `teams(id, start_date, created_at, expires_at)`
+  - `members(team_id, name, schedule)`: `(team_id, name)` 기준 upsert라 여러 명이 동시에 입력해도 서로 덮어쓰지 않습니다.
+  - `schedule`은 7일 × 30칸 = 210자 비트열입니다.
+- 만료
+  - `expires_at = max(생성 시각 + 14일, 보드 마지막 날 자정(KST))`
+  - 조회/수정 API는 만료된 팀을 바로 404로 처리합니다.
+  - Vercel Cron이 매일 03:00 KST에 `/api/cron/cleanup`을 호출해 만료된 팀을 삭제합니다. (`members`는 cascade 삭제)
+- 팀당 최대 30명
 
-## 인코딩 최적화 로직
+### API
+
+| Method | Path | 설명 |
+| --- | --- | --- |
+| `POST` | `/api/teams` | `{ startDate: 'YYYY-MM-DD' }`로 팀 생성 |
+| `GET` | `/api/teams/:id` | 팀 정보 + 멤버 일정 조회 |
+| `PUT` | `/api/teams/:id/members/:name` | `{ schedule }`로 멤버 일정 저장 (upsert) |
+| `DELETE` | `/api/teams/:id/members/:name` | 멤버 삭제 |
+| `GET` | `/api/cron/cleanup` | 만료 팀 삭제 (Vercel Cron 전용) |
+
+## (v1) URL 인코딩 최적화 로직
+
+> DB 도입 전, 일정 전체를 URL에 담던 시절의 로직입니다.
 
 - 일정 상태를 고정 길이 비트열(`SCHEDULE_BIT_LENGTH`)로 표현합니다. (현재 Lite 기준 `210bit`)
 - 인코딩은 하이브리드 방식입니다.
@@ -55,6 +75,8 @@
 초반에는 쉬운 사용성 덕분에 빠르게 사용자 유입이 이루어졌지만,
 일정을 추가할 때마다 URL이 변경되어 매번 새 링크를 다시 공유해야 하는 불편함이 있었습니다.
 
+→ Postgres를 붙여 팀마다 고정 링크를 발급하는 방식으로 개선했습니다.
+
 ## 기술 스택
 
 - Language: TypeScript
@@ -63,16 +85,25 @@
 - Styling: styled-components, SCSS
 - Routing: react-router-dom
 - State: zustand
+- Backend: Vercel Functions, Postgres (Neon), postgres.js
 - Package Manager: Yarn 4
 
 ## 시작하기
 
 ```bash
 yarn install
-yarn dev
+cp .env.example .env.local   # DATABASE_URL 채우기
+psql "$DATABASE_URL" -f db/schema.sql   # 최초 1회
+vercel dev                   # 프론트 + /api 함수 함께 실행
 ```
 
-- 기본 개발 서버: `http://localhost:5173`
+- `yarn dev`는 Vite만 띄우기 때문에 `/api`가 동작하지 않습니다. API까지 확인하려면 `vercel dev`를 사용하세요.
+
+### 배포 설정 (Vercel)
+
+1. Vercel 프로젝트 → Storage(Marketplace)에서 Neon Postgres를 연결하면 `DATABASE_URL`이 자동으로 들어갑니다.
+2. Neon SQL Editor에서 `db/schema.sql`을 한 번 실행합니다.
+3. 환경변수 `CRON_SECRET`에 임의의 긴 문자열을 넣습니다. (cleanup 엔드포인트 보호용)
 
 ## 스크립트
 
@@ -110,7 +141,11 @@ release/1.2.0
 ## 프로젝트 구조
 
 ```text
+api/                # Vercel Functions (팀/멤버 API, 만료 정리 cron)
+db/
+└── schema.sql      # Postgres 스키마
 src/
+├── api/            # API 클라이언트
 ├── assets/         # 이미지, 아이콘 등 정적 리소스
 ├── components/     # 캘린더/온보딩/헤더 등 UI 컴포넌트
 ├── constants/      # 시간, 알림 등 상수
@@ -120,7 +155,7 @@ src/
 ├── store/          # Zustand 스토어
 ├── styles/         # 전역 스타일 및 테마
 ├── types/          # 타입 정의
-├── utils/          # URL/날짜 유틸리티
+├── utils/          # 일정/날짜 유틸리티
 ├── App.tsx
 └── main.tsx
 ```
