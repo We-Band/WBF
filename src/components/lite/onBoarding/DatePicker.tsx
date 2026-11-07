@@ -149,7 +149,7 @@ const DatePicker: React.FC = () => {
             }
           }}
         >
-          <S.MonthText>{monthLabel(month)}</S.MonthText>
+          <S.MonthText>{month}</S.MonthText>
           {dropBoxToggle && (
             <S.MonthDropBox ref={monthDropBoxRef} role="listbox">
               {MONTHNAMES.map((monthName) => (
@@ -163,7 +163,7 @@ const DatePicker: React.FC = () => {
                     setDropBoxToggle(false);
                   }}
                 >
-                  {monthLabel(monthName)}
+                  {monthName}
                 </S.MonthDropItem>
               ))}
             </S.MonthDropBox>

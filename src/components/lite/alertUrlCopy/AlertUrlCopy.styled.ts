@@ -45,9 +45,8 @@ export const UrlContainer = styled.button`
 `;
 
 export const UrlText = styled.span`
-  min-width: 0;
-  max-width: 220px;
-  color: ${({ theme }) => theme.colors.WBOrange.wbo700};
+  width: 220px;
+  color: ${({ theme }) => theme.colors.WBOrange.wbo400};
   ${({ theme }) => theme.fontStyles.S02_Bold};
 
   white-space: nowrap;

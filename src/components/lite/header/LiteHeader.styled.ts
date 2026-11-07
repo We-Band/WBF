@@ -6,7 +6,7 @@ export const LiteHeaderContainer = styled.div`
   align-items: flex-end;
 
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 32px;
   gap: 8px;
 `;
 
@@ -53,7 +53,7 @@ export const AddUserContainer = styled.button`
 
 export const AddUserText = styled.h6`
   ${({ theme }) => theme.fontStyles.S03_Bold};
-  color: ${({ theme }) => theme.colors.Gray.gray700};
+  color: ${({ theme }) => theme.colors.Gray.gray500};
 `;
 
 export const PickUserWrapper = styled.div`
@@ -104,7 +104,7 @@ export const UserNameInput = styled.input`
 
 export const AddUserButton = styled.button`
   ${({ theme }) => theme.fontStyles.S02_Bold}
-  background: ${({ theme }) => theme.colors.WBOrange.wbo600};
+  background: ${({ theme }) => theme.colors.WBOrange.wbo400};
   color: ${({ theme }) => theme.colors.Gray.gray50};
 
   display: flex;

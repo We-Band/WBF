@@ -20,7 +20,7 @@ export const AlertContainer = styled.div`
   align-self: center;
   bottom: 36px;
 
-  padding: 8px 24px;
+  padding: 8px 40px;
   border-radius: 12px;
 
   animation: ${fadeInOut} 3s ease-in-out;
@@ -32,7 +32,7 @@ export const AlertText = styled.p<{ $highlight: boolean }>`
   ${({ theme }) => theme.fontStyles.S02_Bold}
   color: ${({ theme, $highlight }) =>
     $highlight
-      ? theme.colors.WBOrange.wbo300
+      ? theme.colors.WBOrange.wbo400
       : theme.colors.BlackAndWhite.white};
   white-space: pre-wrap;
 `;

@@ -211,7 +211,6 @@ const LiteHeader: React.FC<LiteHeaderProps> = ({
             description="표시한 시간이 저장되지 않아요."
             cancelLabel="계속 입력"
             confirmLabel="그만두기"
-            danger
             onCancel={() => setConfirm(null)}
             onConfirm={exitEditMode}
           />
@@ -223,7 +222,6 @@ const LiteHeader: React.FC<LiteHeaderProps> = ({
             description="저장하면 기존 일정이 이 일정으로 바뀌어요. 다른 사람이라면 이름을 바꿔 주세요."
             cancelLabel="이름 바꾸기"
             confirmLabel="덮어쓰기"
-            danger
             onCancel={() => setConfirm(null)}
             onConfirm={() => save(confirm.name)}
           />
@@ -245,7 +243,6 @@ const LiteHeader: React.FC<LiteHeaderProps> = ({
             title={`${confirm.name}님의 일정을 삭제할까요?`}
             description="삭제하면 되돌릴 수 없어요."
             confirmLabel="삭제"
-            danger
             onCancel={() => setConfirm(null)}
             onConfirm={() => handleDeleteUser(confirm.name)}
           />
