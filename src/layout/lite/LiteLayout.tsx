@@ -51,10 +51,7 @@ const LiteLayout = () => {
           </S.LogoButton>
 
           <S.FooterLinkContainer>
-            <S.FooterLabel>Contact</S.FooterLabel>
-            <S.FooterLink href="mailto:qktjwl123@gmail.com">
-              qktjwl123@gmail.com
-            </S.FooterLink>
+            <S.FooterLink href="mailto:qktjwl123@gmail.com">Contact</S.FooterLink>
             <S.FooterLink
               href="https://github.com/We-Band/WBF"
               target="_blank"
