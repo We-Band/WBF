@@ -1,6 +1,5 @@
 import { AlertCopyUrlLite } from '@icons/CopyUrl';
 import * as S from './AlertUrlCopy.styled';
-import * as D from '@components/dialog/Dialog.styled';
 import { useEffect, useId, useRef } from 'react';
 import useShareLink from '@hooks/useShareLink';
 
@@ -42,7 +41,6 @@ const AlertUrlCopy = ({ url, onClose }: AlertUrlCopyProps) => {
           <AlertCopyUrlLite aria-hidden />
         </S.UrlContainer>
         <S.UrlInstructionContainer>
-          <S.UrlInstruction>링크는 바뀌지 않아요.</S.UrlInstruction>
           <S.UrlInstruction>
             <S.UrlInstructionSpan>
               같은 링크로 팀원들과 일정을 공유
@@ -50,23 +48,9 @@ const AlertUrlCopy = ({ url, onClose }: AlertUrlCopyProps) => {
             해 보세요!
           </S.UrlInstruction>
         </S.UrlInstructionContainer>
-        <D.DialogButtons>
-          <D.DialogButton
-            ref={closeRef}
-            type="button"
-            $variant="secondary"
-            onClick={onClose}
-          >
-            확인
-          </D.DialogButton>
-          <D.DialogButton
-            type="button"
-            $variant="primary"
-            onClick={() => share(url)}
-          >
-            링크 공유하기
-          </D.DialogButton>
-        </D.DialogButtons>
+        <S.AlertUrlButton ref={closeRef} type="button" onClick={onClose}>
+          확인
+        </S.AlertUrlButton>
       </S.AlertCopyUrlContainer>
     </S.AlertCopyUrlBackgroud>
   );

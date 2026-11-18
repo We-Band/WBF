@@ -39,12 +39,12 @@ export const CalendarDateSection = styled.div`
 
 export const CalendarDate = styled.h6`
   ${({ theme }) => theme.fontStyles.S01_Bold};
-  color: ${({ theme }) => theme.colors.Gray.gray700};
+  color: ${({ theme }) => theme.colors.Gray.gray500};
 `;
 
 export const CalendarText = styled.h6`
   ${({ theme }) => theme.fontStyles.S01_Bold};
-  color: ${({ theme }) => theme.colors.Gray.gray600};
+  color: ${({ theme }) => theme.colors.Gray.gray400};
   text-align: center;
 `;
 
@@ -61,7 +61,7 @@ export const CalendarTimeListContainer = styled.div`
 `;
 
 export const CalendarTimeSection = styled.div`
-  color: ${({ theme }) => theme.colors.Gray.gray600};
+  color: ${({ theme }) => theme.colors.Gray.gray400};
   ${({ theme }) => theme.fontStyles.S01_Regular};
 
   display: flex;
@@ -97,9 +97,6 @@ export const CalendarScheduleSection = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.colors.Gray.gray100};
 `;
 
-/** 1명이라도 가능하면 최소 20% 농도는 보이게 한다. */
-const MIN_ALPHA = 0.2;
-
 export const CalendarSchedule = styled.div<{
   $num: number;
   $total: number;
@@ -115,22 +112,18 @@ export const CalendarSchedule = styled.div<{
     if ($preview === 'add') return theme.colors.WBOrange.wbo200;
     if ($preview === 'erase') return theme.colors.Gray.gray300;
     if ($total <= 0 || $num <= 0) return 'transparent';
-    const ratio = Math.min($num / $total, 1);
-    return transparentize(
-      1 - (MIN_ALPHA + (1 - MIN_ALPHA) * ratio),
-      theme.colors.Alpha.alpha,
-    );
+    return transparentize(1 - $num / $total, theme.colors.Alpha.alpha);
   }};
 
   box-shadow: ${({ theme, $best, $inspected }) =>
     $inspected
-      ? `inset 0 0 0 2px ${theme.colors.Gray.gray800}`
+      ? `inset 0 0 0 2px ${theme.colors.Gray.gray600}`
       : $best
-        ? `inset 0 0 0 2px ${theme.colors.WBOrange.wbo600}`
+        ? `inset 0 0 0 2px ${theme.colors.WBOrange.wbo500}`
         : 'none'};
 `;
 
-// Info bar (안내 / 요약)
+// Info bar (안내 / 요약) — 기존 디자인 토큰만 사용
 export const CalendarInfoBar = styled.div`
   display: flex;
   flex-direction: column;
@@ -140,7 +133,7 @@ export const CalendarInfoBar = styled.div`
   min-width: 100%;
 
   margin: 0 0 4px;
-  padding: 10px 12px;
+  padding: 12px 20px;
   gap: 4px;
 
   border-radius: 8px;
@@ -162,24 +155,25 @@ export const CalendarInfoText = styled.p`
 
 export const CalendarInfoStrong = styled.strong`
   ${({ theme }) => theme.fontStyles.S02_Bold};
-  color: ${({ theme }) => theme.colors.WBOrange.wbo600};
+  color: ${({ theme }) => theme.colors.WBOrange.wbo400};
 `;
 
 export const CalendarInfoSub = styled.p`
   ${({ theme }) => theme.fontStyles.S01_Regular};
-  color: ${({ theme }) => theme.colors.Gray.gray600};
+  color: ${({ theme }) => theme.colors.Gray.gray500};
   word-break: keep-all;
 `;
 
+/** 헤더의 '취소' 버튼과 같은 스타일 */
 export const CalendarInfoButton = styled.button`
-  ${({ theme }) => theme.fontStyles.S01_Bold};
-  color: ${({ theme }) => theme.colors.Gray.gray700};
-  background: ${({ theme }) => theme.colors.BlackAndWhite.white};
+  ${({ theme }) => theme.fontStyles.S02_Bold};
+  background: ${({ theme }) => theme.colors.Gray.gray300};
+  color: ${({ theme }) => theme.colors.Gray.gray600};
 
   flex-shrink: 0;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 4px;
-  border: 1px solid ${({ theme }) => theme.colors.Gray.gray300};
+  white-space: nowrap;
   cursor: pointer;
 `;
 
@@ -196,7 +190,7 @@ export const LegendBar = styled.span`
   border-radius: 4px;
   background: linear-gradient(
     to right,
-    ${({ theme }) => transparentize(1 - MIN_ALPHA, theme.colors.Alpha.alpha)},
+    ${({ theme }) => transparentize(0.9, theme.colors.Alpha.alpha)},
     ${({ theme }) => theme.colors.Alpha.alpha}
   );
 `;
@@ -205,5 +199,5 @@ export const LegendBest = styled.span`
   display: inline-block;
   width: 12px;
   height: 8px;
-  box-shadow: inset 0 0 0 2px ${({ theme }) => theme.colors.WBOrange.wbo600};
+  box-shadow: inset 0 0 0 2px ${({ theme }) => theme.colors.WBOrange.wbo500};
 `;

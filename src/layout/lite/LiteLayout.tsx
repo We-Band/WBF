@@ -51,17 +51,16 @@ const LiteLayout = () => {
           </S.LogoButton>
 
           <S.FooterLinkContainer>
-            <S.FooterLink
-              href="https://glacier-borogovia-7b5.notion.site/We-Band-Lite-1ccdf3d703f28039b961c72d95d691d3"
-              target="_blank"
-            >
-              WeBand 더 알아보기
+            <S.FooterLabel>Contact</S.FooterLabel>
+            <S.FooterLink href="mailto:qktjwl123@gmail.com">
+              qktjwl123@gmail.com
             </S.FooterLink>
             <S.FooterLink
-              href="mailto:qktjwl123@gmail.com?subject=WeBand 관련 문의드립니다."
+              href="https://github.com/We-Band/WBF"
               target="_blank"
+              rel="noopener noreferrer"
             >
-              문의 및 버그제보
+              GitHub
             </S.FooterLink>
           </S.FooterLinkContainer>
         </S.FooterContainer>

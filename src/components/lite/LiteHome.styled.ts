@@ -46,7 +46,7 @@ export const StickyHeader = styled.div`
 
 export const ExpiryText = styled.p`
   ${({ theme }) => theme.fontStyles.S01_Regular};
-  color: ${({ theme }) => theme.colors.Gray.gray600};
+  color: ${({ theme }) => theme.colors.Gray.gray500};
   text-align: center;
   padding: 16px 16px 24px;
 `;

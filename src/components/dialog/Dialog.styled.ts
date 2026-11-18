@@ -34,34 +34,36 @@ export const DialogTitle = styled.h3`
 
 export const DialogDescription = styled.p`
   ${({ theme }) => theme.fontStyles.S02_Medium};
-  color: ${({ theme }) => theme.colors.Gray.gray600};
   text-align: center;
   word-break: keep-all;
 `;
 
 export const DialogButtons = styled.div`
   display: flex;
-  width: 100%;
+  justify-content: center;
   gap: 8px;
 `;
 
+/** primary = 기존 저장 완료창의 '확인' 버튼, secondary = 헤더의 '취소' 버튼과 같은 스타일 */
 export const DialogButton = styled.button<{
-  $variant: 'primary' | 'secondary' | 'danger';
+  $variant: 'primary' | 'secondary';
 }>`
   ${({ theme }) => theme.fontStyles.S02_Bold};
-  flex: 1;
-  padding: 10px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-
   background: ${({ theme, $variant }) =>
     $variant === 'secondary'
       ? theme.colors.Gray.gray300
-      : $variant === 'danger'
-        ? theme.colors.AlertColor.red500
-        : theme.colors.WBOrange.wbo600};
+      : theme.colors.WBOrange.wbo400};
   color: ${({ theme, $variant }) =>
     $variant === 'secondary'
-      ? theme.colors.Gray.gray700
-      : theme.colors.BlackAndWhite.white};
+      ? theme.colors.Gray.gray600
+      : theme.colors.Gray.gray50};
+
+  display: flex;
+  width: 120px;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 4px;
+  cursor: pointer;
 `;

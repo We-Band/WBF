@@ -148,7 +148,7 @@ export const DateInput = styled.input`
 export const DateSummary = styled.p<{ $warning: boolean }>`
   ${({ theme }) => theme.fontStyles.S02_Medium};
   color: ${({ theme, $warning }) =>
-    $warning ? theme.colors.AlertColor.red500 : theme.colors.Gray.gray600};
+    $warning ? theme.colors.WBOrange.wbo400 : theme.colors.Gray.gray500};
   margin-top: -48px;
   text-align: center;
   word-break: keep-all;
@@ -163,7 +163,7 @@ export const MakeScheduleButton = styled.button`
     cursor: default;
   }
 
-  background: ${({ theme }) => theme.colors.WBOrange.wbo600};
+  background: ${({ theme }) => theme.colors.WBOrange.wbo400};
   color: ${({ theme }) => theme.colors.Gray.gray50};
 
   display: flex;

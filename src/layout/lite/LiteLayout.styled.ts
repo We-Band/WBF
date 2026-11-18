@@ -51,6 +51,11 @@ export const FooterLinkContainer = styled.div`
   gap: 4px;
 `;
 
+export const FooterLabel = styled.span`
+  ${({ theme }) => theme.fontStyles.S01_Bold};
+  color: ${({ theme }) => theme.colors.Gray.gray500};
+`;
+
 export const FooterLink = styled.a`
   ${({ theme }) => theme.fontStyles.S01_Medium};
   color: ${({ theme }) => theme.colors.Gray.gray500};
